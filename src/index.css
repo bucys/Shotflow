@@ -30,11 +30,14 @@ body,
 #root {
   margin: 0;
   height: 100%;
+  /* Prevent the page from ever scrolling. iOS Safari uses the <html> element
+     as its scroll root, so overflow: hidden must appear here — on body alone
+     is not enough to stop rubber-band / whole-page scroll on iOS. */
+  overflow: hidden;
 }
 
 body {
-  /* The page itself never scrolls; the inner .app area scrolls when needed.
-     This avoids unnecessary whole-page scrolling when content fits. */
+  /* Reiterate for specificity; also needed on Android Chrome. */
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
@@ -49,9 +52,11 @@ body {
 #root {
   /* Fill the viewport. 100vh is the fallback for older browsers;
      100dvh tracks the dynamic mobile viewport (iOS Safari / Android Chrome
-     toolbars) without layout shift. */
+     toolbars) without layout shift. overflow: hidden ensures no descendant
+     can leak a scroll context at this level. */
   height: 100vh;
   height: 100dvh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
