@@ -3,7 +3,7 @@ import type { ShootSession } from '../types/session'
 const defaultSession: ShootSession = {
   id: 'trakai',
   name: 'Trakai Drone Shot List',
-  date: '',
+  date: '2026-07-12',
   shots: [
     {
       id: 'shot-01',
