@@ -75,7 +75,7 @@ export default function ShootScreen({
     setExpandedShots((prev) => ({ ...prev, [id]: !prev[id] }))
 
   const toggleSectionCollapsed = (id: string) =>
-    setCollapsedSections((prev) => ({ ...prev, [id]: !prev[id] }))
+    setCollapsedSections((prev) => ({ ...prev, [id]: prev[id] === false }))
 
   const handleReset = () => {
     const ok = window.confirm(
@@ -154,7 +154,7 @@ export default function ShootScreen({
               (count, shot) => (shot.completed ? count + 1 : count),
               0,
             )
-            const isCollapsed = !!collapsedSections[section.id]
+            const isCollapsed = collapsedSections[section.id] !== false
 
             return (
               <section key={section.id} className="shoot-section">
