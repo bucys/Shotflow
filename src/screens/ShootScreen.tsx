@@ -199,11 +199,11 @@ export default function ShootScreen({
             )
           })}
         </div>
-      </main>
 
-      <footer className="footer">
-        <p>ShotFlow · {doneCount === total ? 'All shots captured 🎬' : 'Tap a circle to mark a shot complete'}</p>
-      </footer>
+        <footer className="footer">
+          <p>ShotFlow · {doneCount === total ? 'All shots captured 🎬' : 'Tap a circle to mark a shot complete'}</p>
+        </footer>
+      </main>
     </div>
   )
 }
