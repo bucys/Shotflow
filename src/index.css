@@ -388,25 +388,24 @@ body {
   transform: rotate(180deg);
 }
 
-/* Animated expand / collapse using the grid-rows 0fr -> 1fr technique. */
+/* Animated expand / collapse. Collapsed state fully clips the description
+   so no border, background, padding, or text can peek out below the title. */
 .card-description-wrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.25s ease;
+  max-height: 0;
+  margin-top: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease, margin-top 0.25s ease, opacity 0.18s ease;
 }
 
 .card-description-wrap--open {
-  grid-template-rows: 1fr;
-}
-
-.card-description-wrap > .card-description {
-  overflow: hidden;
-  min-height: 0;
+  max-height: 320px;
+  margin-top: 12px;
+  opacity: 1;
 }
 
 /* Description box */
 .card-description {
-  margin-top: 12px;
   padding: 14px 16px;
   background: #0c1426;
   border: 1px solid var(--border);
