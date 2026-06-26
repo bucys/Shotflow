@@ -93,6 +93,9 @@ export default async function handler(req, res) {
     return
   }
 
+  const model = process.env.OPENAI_MODEL || 'gpt-4o'
+  console.log('ShotFlow planner model:', model)
+
   const body = readBody(req)
   const brief = cleanText(body.brief)
   const answers = cleanAnswers(body.answers)
@@ -110,7 +113,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5.5',
+        model,
         temperature: 0.7,
         max_tokens: 4000,
         response_format: { type: 'json_object' },

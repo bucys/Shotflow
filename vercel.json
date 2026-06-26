@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/generate-shot-list.js": {
+      "includeFiles": "prompts/**"
+    }
+  }
+}

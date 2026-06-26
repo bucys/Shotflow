@@ -63,12 +63,29 @@ Default shot count rules:
 Quality rules:
 - Use 2-4 clear sections such as Video, Photos, Drone Video, iPhone Photos, B-Roll, Details, Must Have, or Social Cuts.
 - Shots must be practical and location-specific, not generic.
-- Keep shot titles short and concrete.
 - Keep descriptions short, actionable, and location-aware.
 - Do not invent client names, brands, permissions, exact laws, or unsafe flight instructions.
 - Do not include empty sections.
 - Do not include checklist syntax, numbering, timestamps, or markdown tables.
 - For project responses, the text must be parser-safe and ready to preview in ShotFlow unchanged.
+
+Shot title quality rules:
+- Never use generic shot titles.
+- Avoid titles like Establishing Shot, Push-In Shot, Orbiting Shot, Reflection, Golden Hour, Detail Shot, Wide Shot.
+- Every shot title must mention at least one of: location, subject, movement, composition, or emotional/story purpose.
+- Keep titles short and concrete, but always anchor them to something specific in the brief.
+- Bad/Good examples:
+  - Bad: Orbiting Shot
+  - Good: Slow Orbit Around Trakai Island Castle Over Lake Galvė
+  - Bad: Reflection
+  - Good: Castle Reflection in Lake Galvė During Golden Hour
+  - Bad: Detail Shot
+  - Good: Close-up of Castle Brick Texture and Wooden Bridge Lines
+
+Self-review rule:
+- Before returning the final answer, silently review the shot list.
+- Replace generic, duplicated, or weak shots with stronger location-specific shots.
+- Return only the final best version.
 
 Travel / drone planning guidance:
 - For Trakai-like travel or drone plans, include a strong mix of establishing shot, reveal, orbit, push-in, pull-back, top-down, bridge or leading-line composition, reflection/photo, architectural or texture details, people/context if relevant, and backup shots for wind or crowds.

@@ -1,19 +1,17 @@
 # ShotFlow
 
-A mobile-first shot checklist app built with Vite + React + TypeScript.
+A mobile-first shoot-planning and shot checklist app built with Vite + React + TypeScript.
 
-**Stage 1** ships a single hardcoded shoot — _Trakai Drone Shot List_ — with 12 drone shots. Tap a shot's status circle to mark it complete, tap the chevron to read its description, and track your progress with a live counter and progress bar. Completed states are saved to `localStorage` so they survive a page refresh.
+ShotFlow lets you plan a shoot from a natural-language brief with the **AI Shoot Planner**, then organize the result into Projects, Sections, and a tappable Checklist. Everything you create is saved to `localStorage`, so your projects and progress survive a page refresh. The AI Shoot Planner is powered by an OpenAI model through a Vercel serverless API route — your API key stays on the server.
 
 ## Features
 
-- One hardcoded shoot with exactly 12 shots (title, description, completed)
-- Polished mobile-first cards
-- Tap the status circle to mark / unmark a shot complete — completed cards turn green and stay in place
-- Tap the chevron to expand / collapse a shot's description in a consistent rounded box
-- Progress display: `completed / total` plus a progress bar and percentage
-- Completed states persisted in `localStorage`
-- **Reset Progress** button with a browser confirmation prompt
-- Semantic buttons with accessible labels (`aria-pressed`, `aria-expanded`, `role="progressbar"`)
+- **AI Shoot Planner** — describe a shoot in plain language and get an import-ready project; the planner may ask a few follow-up questions first to sharpen the plan
+- **Projects** — create and switch between multiple shoots
+- **Sections** — shots are grouped into named sections within a project
+- **Checklist** — tap a shot's status circle to mark it complete, tap the chevron to read its description, and track progress with a live counter and progress bar
+- **localStorage persistence** — projects, sections, and completed states are stored locally and survive a refresh
+- Polished mobile-first cards and accessible controls (`aria-pressed`, `aria-expanded`, `role="progressbar"`)
 
 ## Getting started
 
@@ -35,15 +33,24 @@ npm run preview
 
 ## AI Shoot Planner
 
-ShotFlow includes an optional Vercel serverless route at `/api/generate-shot-list` for planning import-ready shoots from a natural-language `brief`. The frontend sends the original brief and, only when needed, follow-up `answers`; the server loads the planner prompt from `prompts/shotPlanner.md` and keeps the OpenAI key server-side.
+The planner runs through a Vercel serverless route at `/api/generate-shot-list`. The frontend sends the original natural-language `brief` and, only when needed, follow-up `answers`. The server loads the planner prompt from `prompts/shotPlanner.md` and keeps the OpenAI key server-side — it is never exposed to the browser.
 
-The route returns either `{ "type": "questions", "questions": [...] }` or `{ "type": "project", "text": "# Project Name..." }`. Only `project` text is sent to the parser and Preview.
+The route returns either `{ "type": "questions", "questions": [...] }` (follow-up questions to answer) or `{ "type": "project", "text": "# Project Name..." }`. Only `project` text is sent to the parser and Preview, where you can import it as a new project.
 
-Set this environment variable in Vercel or your local serverless environment:
+`vercel.json` declares `includeFiles: "prompts/**"` for the function so the prompt files are bundled into the deployed serverless function.
+
+### Environment variables
+
+Set these in Vercel (or your local serverless environment):
 
 ```bash
-OPENAI_API_KEY=your_openai_api_key
+OPENAI_API_KEY=***
+# optional:
+OPENAI_MODEL=gpt-5.5
 ```
+
+- `OPENAI_API_KEY` — **required**. Your OpenAI API key.
+- `OPENAI_MODEL` — **optional**. Set `OPENAI_MODEL=gpt-5.5` if that model is available on your account. When unset, the route falls back to `gpt-4o`. The selected model is logged server-side and is never shown in the frontend UI.
 
 Do not commit `.env` files. `.env` is already ignored by git.
 
@@ -55,13 +62,10 @@ shotflow/
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
-└── src/
-    ├── main.tsx       # React entry point
-    ├── App.tsx        # App UI, state, and localStorage persistence
-    ├── shots.ts       # Shoot title + 12 hardcoded shots
-    └── index.css      # Mobile-first styles
+├── vercel.json                 # bundles prompts/** into the serverless function
+├── api/
+│   └── generate-shot-list.js   # Vercel serverless route for the AI Shoot Planner
+├── prompts/
+│   └── shotPlanner.md          # system prompt loaded by the API route
+└── src/                        # Vite + React + TypeScript frontend
 ```
-
-## Notes
-
-This stage intentionally has no routing, backend, login, editing, deleting, or drag-and-drop — it's a focused, self-contained checklist.
