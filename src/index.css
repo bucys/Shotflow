@@ -33,9 +33,6 @@ body,
 }
 
 body {
-  /* The page itself never scrolls; the inner .app area scrolls when needed.
-     This avoids unnecessary whole-page scrolling when content fits. */
-  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
   color: var(--text);
@@ -77,17 +74,33 @@ body {
     calc(28px + env(safe-area-inset-bottom));
 }
 
+.app > header {
+  /* Prevent the header from shrinking below its content height. Without this,
+     flex could compress the header on small viewports, causing its overflow
+     content to visually bleed into the scroll area below. */
+  flex-shrink: 0;
+}
+
 .app > main {
   /* The only vertical scroll container. As a flex child, min-height: 0 lets it
      shrink below its content size so internal scrolling engages instead of
      pushing the page; flex: 1 1 auto makes it absorb the leftover height
-     between the header and footer. Touch momentum + scroll containment for
-     mobile (iOS Safari / Android Chrome). */
+     between the header and any pinned footer. Touch momentum + scroll
+     containment for mobile (iOS Safari / Android Chrome). */
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  /* Extra space so the last scrolled item (or footer) isn't flush with the
+     bottom clip edge of the scroll container. */
+  padding-bottom: 12px;
+}
+
+.app > footer {
+  /* Pinned footers (e.g. form-action buttons in CreateProjectScreen) must not
+     shrink — they always need their full height visible. */
+  flex-shrink: 0;
 }
 
 .app--empty-home {
