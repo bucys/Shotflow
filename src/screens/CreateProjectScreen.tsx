@@ -174,15 +174,40 @@ export default function CreateProjectScreen({
 
         <main>
           <ul className="preview-list">
-            {parsed.sections.map((section) => (
-              <li key={section.name} className="preview-item preview-item--section">
-                <span>{section.name}</span>
-                <span className="preview-item-count">
-                  {section.shots.length}{' '}
-                  {section.shots.length === 1 ? 'shot' : 'shots'}
-                </span>
-              </li>
-            ))}
+            {parsed.sections.map((section) => {
+              const visibleShots = section.shots.slice(0, 6)
+              const hiddenShotCount = section.shots.length - visibleShots.length
+
+              return (
+                <li key={section.name} className="preview-section-card">
+                  <div className="preview-section-header">
+                    <span>{section.name}</span>
+                    <span className="preview-item-count">
+                      {section.shots.length}{' '}
+                      {section.shots.length === 1 ? 'shot' : 'shots'}
+                    </span>
+                  </div>
+
+                  <ol className="preview-shot-list">
+                    {visibleShots.map((shot, shotIndex) => (
+                      <li key={shot.title} className="preview-shot-title">
+                        <span className="preview-shot-number">
+                          {String(shotIndex + 1).padStart(2, '0')}
+                        </span>
+                        <span>{shot.title}</span>
+                      </li>
+                    ))}
+                  </ol>
+
+                  {hiddenShotCount > 0 && (
+                    <p className="preview-more-shots">
+                      + {hiddenShotCount} more{' '}
+                      {hiddenShotCount === 1 ? 'shot' : 'shots'}
+                    </p>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         </main>
 
