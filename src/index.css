@@ -673,8 +673,47 @@ body {
   line-height: 1.5;
 }
 
+.planner-field {
+  margin-top: 4px;
+}
+
+.planner-textarea {
+  min-height: 300px;
+}
+
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.question-field {
+  margin-bottom: 0;
+}
+
+.question-field .field-label {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.textarea--compact {
+  min-height: 128px;
+}
+
 .textarea::placeholder {
   color: var(--text-faint);
+}
+
+.form-error {
+  margin: -4px 0 14px;
+  padding: 10px 12px;
+  color: #fecaca;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 /* Form action buttons */

@@ -7,25 +7,13 @@ interface CreateProjectScreenProps {
   onCreate: (session: ShootSession) => void
 }
 
-const PLACEHOLDER = `Example:
+type PlannerStep = 'describe' | 'questions'
 
-# Trakai Castle
+const BRIEF_PLACEHOLDER = `Tomorrow I'm going to Trakai around 19:00.
 
-## Drone Video
-Hero Reveal
-Start low behind trees and slowly ascend.
+I'll bring my DJI Air 2 and an iPhone.
 
----
-Castle Orbit
-Fly a slow circle around the castle.
-
-## Drone Photos
-Reflection
-Capture the reflection on the lake.
-
----
-Top Down
-Point the camera straight down.`
+I want cinematic travel footage and beautiful photos for Instagram.`
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -59,22 +47,113 @@ export default function CreateProjectScreen({
   onCancel,
   onCreate,
 }: CreateProjectScreenProps) {
-  const [name, setName] = useState('')
-  const [date, setDate] = useState(today)
+  const [date] = useState(today)
+  const [brief, setBrief] = useState('')
   const [text, setText] = useState('')
+  const [plannerStep, setPlannerStep] = useState<PlannerStep>('describe')
+  const [questions, setQuestions] = useState<string[]>([])
+  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [isPlanning, setIsPlanning] = useState(false)
+  const [planError, setPlanError] = useState('')
   const [showPreview, setShowPreview] = useState(false)
 
   const parsed = useMemo(() => parseShotList(text), [text])
 
-  const projectName = name.trim() || parsed.projectName || 'Untitled Project'
+  const projectName = parsed.projectName || 'Untitled Project'
   const shotCount = parsed.sections.reduce(
     (total, section) => total + section.shots.length,
     0,
   )
-  const canPreview = shotCount > 0
+  const canPlan = brief.trim().length > 0 && !isPlanning
+  const canContinuePlanning =
+    questions.length > 0 &&
+    questions.every((question) => answers[question]?.trim()) &&
+    !isPlanning
 
   const handleCreate = () => {
     onCreate(buildSession(projectName, date, parsed.sections))
+  }
+
+  const requestPlan = async (nextAnswers?: Record<string, string>) => {
+    setIsPlanning(true)
+    setPlanError('')
+
+    try {
+      const payload: {
+        brief: string
+        answers?: Record<string, string>
+      } = { brief }
+
+      if (nextAnswers && Object.keys(nextAnswers).length > 0) {
+        payload.answers = nextAnswers
+      }
+
+      const response = await fetch('/api/generate-shot-list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data.error === 'string'
+            ? data.error
+            : 'Could not plan your shoot. Please try again.',
+        )
+      }
+
+      if (data.type === 'questions') {
+        const nextQuestions: string[] = Array.isArray(data.questions)
+          ? data.questions.filter((question: unknown): question is string =>
+              typeof question === 'string' && question.trim().length > 0,
+            )
+          : []
+
+        if (!nextQuestions.length) {
+          throw new Error('The planner did not return usable questions.')
+        }
+
+        setQuestions(nextQuestions)
+        setAnswers(
+          Object.fromEntries(
+            nextQuestions.map((question) => [question, answers[question] || '']),
+          ),
+        )
+        setPlannerStep('questions')
+        return
+      }
+
+      if (data.type !== 'project') {
+        throw new Error('The planner returned an unsupported response type.')
+      }
+
+      const generated = typeof data.text === 'string' ? data.text.trim() : ''
+      if (!generated) {
+        throw new Error('The shoot plan was empty. Please try again.')
+      }
+
+      setText(generated)
+      setShowPreview(true)
+    } catch (error) {
+      setPlanError(
+        error instanceof Error
+          ? error.message
+          : 'Could not plan your shoot. Please try again.',
+      )
+    } finally {
+      setIsPlanning(false)
+    }
+  }
+
+  const handlePlan = () => {
+    if (!canPlan) return
+    void requestPlan()
+  }
+
+  const handleContinuePlanning = () => {
+    if (!canContinuePlanning) return
+    void requestPlan(answers)
   }
 
   if (showPreview) {
@@ -131,61 +210,107 @@ export default function CreateProjectScreen({
     )
   }
 
+  if (plannerStep === 'questions') {
+    return (
+      <div className="app app--planner">
+        <header className="header planner-header">
+          <h1 className="title planner-title">One more thing...</h1>
+          <p className="subtitle planner-subtitle">
+            I need a little more information before I can prepare your shooting
+            plan.
+          </p>
+        </header>
+
+        <main>
+          <div className="question-list">
+            {questions.map((question, index) => (
+              <div className="field question-field" key={question}>
+                <label className="field-label" htmlFor={`planner-answer-${index}`}>
+                  {question}
+                </label>
+                <input
+                  id={`planner-answer-${index}`}
+                  name={`shotflow-planner-answer-${index}`}
+                  type="text"
+                  className="text-input"
+                  value={answers[question] || ''}
+                  onChange={(event) =>
+                    setAnswers((current) => ({
+                      ...current,
+                      [question]: event.target.value,
+                    }))
+                  }
+                  autoComplete="off"
+                  autoCorrect="on"
+                  autoCapitalize="sentences"
+                  spellCheck={true}
+                />
+              </div>
+            ))}
+          </div>
+
+          {planError && (
+            <p className="form-error" role="alert">
+              {planError}
+            </p>
+          )}
+        </main>
+
+        <footer className="form-actions">
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={() => setPlannerStep('describe')}
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={handleContinuePlanning}
+            disabled={!canContinuePlanning}
+          >
+            {isPlanning ? 'Planning…' : 'Continue Planning'}
+          </button>
+        </footer>
+      </div>
+    )
+  }
+
   return (
-    <div className="app">
-      <header className="header">
-        <h1 className="title">New Project</h1>
+    <div className="app app--planner">
+      <header className="header planner-header">
+        <h1 className="title planner-title">✨ AI Shoot Planner</h1>
+        <p className="subtitle planner-subtitle">
+          Describe your shoot in natural language.<br />
+          I'll prepare a structured shooting plan.
+        </p>
       </header>
 
       <main>
-        <div className="field">
-          <label className="field-label" htmlFor="shotflow-project-title">
-            Project Name
-          </label>
-          <input
-            id="shotflow-project-title"
-            name="shotflow-project-title"
-            type="text"
-            className="text-input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Project Name"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="words"
-            spellCheck={false}
-            inputMode="text"
-          />
-        </div>
-
-        <div className="field">
-          <label className="field-label" htmlFor="project-date">
-            Date
-          </label>
-          <input
-            id="project-date"
-            name="shotflow-project-date"
-            type="date"
-            className="text-input"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            autoComplete="off"
-          />
-        </div>
-
-        <div className="field">
-          <label className="field-label" htmlFor="shot-list">
-            Paste Shot List
+        <div className="field planner-field">
+          <label className="field-label" htmlFor="shoot-brief">
+            Shoot brief
           </label>
           <textarea
-            id="shot-list"
-            className="textarea"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={PLACEHOLDER}
-            rows={14}
+            id="shoot-brief"
+            name="shotflow-shoot-brief"
+            className="textarea planner-textarea"
+            value={brief}
+            onChange={(e) => setBrief(e.target.value)}
+            placeholder={BRIEF_PLACEHOLDER}
+            rows={12}
+            autoCorrect="on"
+            autoCapitalize="sentences"
+            spellCheck={true}
           />
         </div>
+
+        {planError && (
+          <p className="form-error" role="alert">
+            {planError}
+          </p>
+        )}
       </main>
 
       <footer className="form-actions">
@@ -195,10 +320,10 @@ export default function CreateProjectScreen({
         <button
           type="button"
           className="btn btn--primary"
-          onClick={() => setShowPreview(true)}
-          disabled={!canPreview}
+          onClick={handlePlan}
+          disabled={!canPlan}
         >
-          Preview
+          {isPlanning ? 'Planning…' : '✨ Plan My Shoot'}
         </button>
       </footer>
     </div>

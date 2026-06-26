@@ -33,6 +33,20 @@ npm run build
 npm run preview
 ```
 
+## AI Shoot Planner
+
+ShotFlow includes an optional Vercel serverless route at `/api/generate-shot-list` for planning import-ready shoots from a natural-language `brief`. The frontend sends the original brief and, only when needed, follow-up `answers`; the server loads the planner prompt from `prompts/shotPlanner.md` and keeps the OpenAI key server-side.
+
+The route returns either `{ "type": "questions", "questions": [...] }` or `{ "type": "project", "text": "# Project Name..." }`. Only `project` text is sent to the parser and Preview.
+
+Set this environment variable in Vercel or your local serverless environment:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key
+```
+
+Do not commit `.env` files. `.env` is already ignored by git.
+
 ## Project structure
 
 ```
