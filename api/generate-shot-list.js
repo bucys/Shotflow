@@ -110,7 +110,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5.5',
         temperature: 0.7,
         max_tokens: 4000,
         response_format: { type: 'json_object' },
