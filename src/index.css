@@ -79,18 +79,18 @@ body {
   color: var(--text-muted);
 }
 
-/* ---------- Back button (Shoot screen) ---------- */
+/* ---------- Back button (smaller + lighter) ---------- */
 .back-button {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   margin: 0 0 14px;
-  padding: 7px 12px 7px 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-muted);
+  padding: 4px 10px 4px 7px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-faint);
   background: transparent;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
   border-radius: 999px;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
@@ -98,7 +98,7 @@ body {
 
 .back-button:hover {
   background: var(--surface-raised);
-  color: var(--text);
+  color: var(--text-muted);
 }
 
 .back-button:active {
@@ -278,7 +278,8 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 14px;
+  /* Vertical padding reduced ~15% (14px -> 12px) for tighter shot cards. */
+  padding: 12px 14px;
   box-shadow: var(--shadow);
   transition: border-color 0.2s ease, background 0.2s ease;
 }
@@ -323,6 +324,18 @@ body {
 .status--done {
   background: var(--done);
   border-color: var(--done);
+}
+
+/* Animated checkmark: scales + fades in when a shot is completed. */
+.status-check {
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.18s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.status--done .status-check {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* Card body */
@@ -375,6 +388,22 @@ body {
   transform: rotate(180deg);
 }
 
+/* Animated expand / collapse using the grid-rows 0fr -> 1fr technique. */
+.card-description-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.card-description-wrap--open {
+  grid-template-rows: 1fr;
+}
+
+.card-description-wrap > .card-description {
+  overflow: hidden;
+  min-height: 0;
+}
+
 /* Description box */
 .card-description {
   margin-top: 12px;
@@ -410,6 +439,174 @@ body {
   margin: 0;
   font-size: 12px;
   color: var(--text-faint);
+}
+
+/* ---------- Floating action button (Home) ---------- */
+.fab {
+  position: fixed;
+  right: max(20px, calc(50% - 280px + 20px));
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.45);
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.fab:hover {
+  background: var(--accent-soft);
+}
+
+.fab:active {
+  transform: scale(0.94);
+}
+
+.fab:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 3px;
+}
+
+/* ---------- Create Project form ---------- */
+.field {
+  margin-bottom: 18px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.text-input,
+.textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.text-input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 220px;
+  line-height: 1.5;
+}
+
+.textarea::placeholder {
+  color: var(--text-faint);
+}
+
+/* Form action buttons */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn {
+  flex: 1 1 0;
+  padding: 13px 16px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease,
+    transform 0.12s ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+.btn--ghost {
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+}
+
+.btn--ghost:hover {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+.btn--primary {
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- Preview ---------- */
+.preview-count {
+  margin: -8px 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.preview-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preview-item {
+  position: relative;
+  padding: 12px 16px 12px 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.preview-item::before {
+  content: '•';
+  position: absolute;
+  left: 14px;
+  color: var(--accent-soft);
+  font-weight: 700;
 }
 
 @media (min-width: 480px) {

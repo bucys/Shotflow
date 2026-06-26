@@ -33,18 +33,22 @@ export default function ShotCard({
           }
           onClick={onToggleCompleted}
         >
-          {isDone && (
-            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-              <path
-                d="M20 6 9 17l-5-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
+          <svg
+            className="status-check"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            aria-hidden="true"
+          >
+            <path
+              d="M20 6 9 17l-5-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
 
         <div className="card-body">
@@ -77,11 +81,13 @@ export default function ShotCard({
         </button>
       </div>
 
-      {isOpen && (
+      <div
+        className={`card-description-wrap${isOpen ? ' card-description-wrap--open' : ''}`}
+      >
         <div id={descId} className="card-description">
           {shot.description}
         </div>
-      )}
+      </div>
     </li>
   )
 }

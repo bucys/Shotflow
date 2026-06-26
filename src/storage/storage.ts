@@ -4,7 +4,7 @@ import type { ShootSession } from '../types/session'
 
 /**
  * Multi-session-ready storage. Full sessions are saved so the Home screen can
- * render saved shoots from localStorage. The default session seeds storage on
+ * render projects from localStorage. The default session seeds storage on
  * first run, and old Stage 2A completion-only progress is migrated forward.
  */
 const SESSIONS_KEY = 'shotflow:sessions:v1'
@@ -103,7 +103,7 @@ export function loadSessions(): ShootSession[] {
   return sessions
 }
 
-/** Persist one updated session while preserving the rest of the saved shoots. */
+/** Persist one updated session while preserving the rest of the projects. */
 export function saveSession(session: ShootSession): void {
   const sessions = loadSessions()
   const updated = cloneSession(session)

@@ -51,7 +51,7 @@ export default function ShootScreen({
           type="button"
           className="back-button"
           onClick={onBack}
-          aria-label="Back to saved shoots"
+          aria-label="Back to projects"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
             <path

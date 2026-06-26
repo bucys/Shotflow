@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import HomeScreen from './screens/HomeScreen'
 import ShootScreen from './screens/ShootScreen'
+import CreateProjectScreen from './screens/CreateProjectScreen'
 import { loadSessions, saveSession } from './storage/storage'
 import type { ShootSession } from './types/session'
 
 export default function App() {
   const [sessions, setSessions] = useState<ShootSession[]>(loadSessions)
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
 
   const activeSession = activeId
     ? sessions.find((s) => s.id === activeId) ?? null
@@ -19,6 +21,21 @@ export default function App() {
     saveSession(updated)
   }
 
+  const createSession = (session: ShootSession) => {
+    setSessions((prev) => [...prev, session])
+    saveSession(session)
+    setCreating(false)
+  }
+
+  if (creating) {
+    return (
+      <CreateProjectScreen
+        onCancel={() => setCreating(false)}
+        onCreate={createSession}
+      />
+    )
+  }
+
   if (activeSession) {
     return (
       <ShootScreen
@@ -29,5 +46,11 @@ export default function App() {
     )
   }
 
-  return <HomeScreen sessions={sessions} onOpenSession={setActiveId} />
+  return (
+    <HomeScreen
+      sessions={sessions}
+      onOpenSession={setActiveId}
+      onCreateProject={() => setCreating(true)}
+    />
+  )
 }
