@@ -1,11 +1,12 @@
 import defaultSession from '../data/defaultSession'
 import availableSessions from '../data/sessions'
-import type { ShootSession } from '../types/session'
+import type { Section, ShootSession } from '../types/session'
+import type { Shot } from '../types/shot'
 
 /**
  * Multi-session-ready storage. Full sessions are saved so the Home screen can
  * render projects from localStorage. The default session seeds storage on
- * first run, and old Stage 2A completion-only progress is migrated forward.
+ * first run, and old Stage 2A/flat-shot projects are migrated forward.
  */
 const SESSIONS_KEY = 'shotflow:sessions:v1'
 const LEGACY_COMPLETED_KEY = 'shotflow:trakai:completed'
@@ -13,22 +14,74 @@ const STAGE_2B_COMPLETED_KEY = 'shotflow:sessions:completed:v2'
 
 type CompletedMap = Record<string, boolean>
 type SessionCompletedStore = Record<string, CompletedMap>
+type LegacySession = Omit<ShootSession, 'sections'> & { sections?: Section[]; shots?: Shot[] }
 
-function isSession(value: unknown): value is ShootSession {
+function isShot(value: unknown): value is Shot {
   if (!value || typeof value !== 'object') return false
-  const candidate = value as ShootSession
+  const candidate = value as Shot
   return (
     typeof candidate.id === 'string' &&
-    typeof candidate.name === 'string' &&
-    typeof candidate.date === 'string' &&
-    Array.isArray(candidate.shots)
+    typeof candidate.title === 'string' &&
+    typeof candidate.description === 'string' &&
+    typeof candidate.completed === 'boolean'
   )
+}
+
+function normalizeSession(value: unknown): ShootSession | null {
+  if (!value || typeof value !== 'object') return null
+  const candidate = value as LegacySession
+
+  if (
+    typeof candidate.id !== 'string' ||
+    typeof candidate.name !== 'string' ||
+    typeof candidate.date !== 'string'
+  ) {
+    return null
+  }
+
+  if (Array.isArray(candidate.sections)) {
+    const sections = candidate.sections
+      .filter(
+        (section) =>
+          section &&
+          typeof section.id === 'string' &&
+          typeof section.name === 'string' &&
+          Array.isArray(section.shots),
+      )
+      .map((section) => ({
+        id: section.id,
+        name: section.name,
+        shots: section.shots.filter(isShot).map((shot) => ({ ...shot })),
+      }))
+
+    return { id: candidate.id, name: candidate.name, date: candidate.date, sections }
+  }
+
+  if (Array.isArray(candidate.shots)) {
+    return {
+      id: candidate.id,
+      name: candidate.name,
+      date: candidate.date,
+      sections: [
+        {
+          id: `${candidate.id}-section-shots`,
+          name: 'Shots',
+          shots: candidate.shots.filter(isShot).map((shot) => ({ ...shot })),
+        },
+      ],
+    }
+  }
+
+  return null
 }
 
 function cloneSession(session: ShootSession): ShootSession {
   return {
     ...session,
-    shots: session.shots.map((shot) => ({ ...shot })),
+    sections: session.sections.map((section) => ({
+      ...section,
+      shots: section.shots.map((shot) => ({ ...shot })),
+    })),
   }
 }
 
@@ -38,9 +91,12 @@ function applyCompletedMap(
 ): ShootSession {
   return {
     ...session,
-    shots: session.shots.map((shot) => ({
-      ...shot,
-      completed: !!completedMap[shot.id],
+    sections: session.sections.map((section) => ({
+      ...section,
+      shots: section.shots.map((shot) => ({
+        ...shot,
+        completed: !!completedMap[shot.id],
+      })),
     })),
   }
 }
@@ -90,7 +146,11 @@ export function loadSessions(): ShootSession[] {
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) {
-        return parsed.filter(isSession).map(cloneSession)
+        const sessions = parsed
+          .map(normalizeSession)
+          .filter((session): session is ShootSession => session !== null)
+        writeSessions(sessions)
+        return sessions.map(cloneSession)
       }
     }
   } catch {

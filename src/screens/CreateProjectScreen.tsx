@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { parseShotList } from '../parser/parseShotList'
-import type { ShootSession } from '../types/session'
+import type { Section, ShootSession } from '../types/session'
 
 interface CreateProjectScreenProps {
   onCancel: () => void
@@ -11,12 +11,17 @@ const PLACEHOLDER = `Example:
 
 # Trakai Castle
 
+## Drone Video
 Hero Reveal
 Start low behind trees and slowly ascend.
 
 ---
 Castle Orbit
 Fly a slow circle around the castle.
+
+## Drone Photos
+Reflection
+Capture the reflection on the lake.
 
 ---
 Top Down
@@ -29,17 +34,23 @@ function today(): string {
 function buildSession(
   name: string,
   date: string,
-  shots: { title: string; description: string }[],
+  sections: { name: string; shots: { title: string; description: string }[] }[],
 ): ShootSession {
+  let shotIndex = 1
+
   return {
     id: `project-${Date.now()}`,
     name,
     date,
-    shots: shots.map((shot, i) => ({
-      id: `shot-${String(i + 1).padStart(2, '0')}`,
-      title: shot.title,
-      description: shot.description,
-      completed: false,
+    sections: sections.map((section, sectionIndex): Section => ({
+      id: `section-${String(sectionIndex + 1).padStart(2, '0')}`,
+      name: section.name,
+      shots: section.shots.map((shot) => ({
+        id: `shot-${String(shotIndex++).padStart(2, '0')}`,
+        title: shot.title,
+        description: shot.description,
+        completed: false,
+      })),
     })),
   }
 }
@@ -56,11 +67,14 @@ export default function CreateProjectScreen({
   const parsed = useMemo(() => parseShotList(text), [text])
 
   const projectName = name.trim() || parsed.projectName || 'Untitled Project'
-  const shotCount = parsed.shots.length
+  const shotCount = parsed.sections.reduce(
+    (total, section) => total + section.shots.length,
+    0,
+  )
   const canPreview = shotCount > 0
 
   const handleCreate = () => {
-    onCreate(buildSession(projectName, date, parsed.shots))
+    onCreate(buildSession(projectName, date, parsed.sections))
   }
 
   if (showPreview) {
@@ -85,9 +99,13 @@ export default function CreateProjectScreen({
 
         <main>
           <ul className="preview-list">
-            {parsed.shots.map((shot, i) => (
-              <li key={i} className="preview-item">
-                {shot.title}
+            {parsed.sections.map((section) => (
+              <li key={section.name} className="preview-item preview-item--section">
+                <span>{section.name}</span>
+                <span className="preview-item-count">
+                  {section.shots.length}{' '}
+                  {section.shots.length === 1 ? 'shot' : 'shots'}
+                </span>
               </li>
             ))}
           </ul>

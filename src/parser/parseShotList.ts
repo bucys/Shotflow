@@ -3,17 +3,23 @@ export interface ParsedShot {
   description: string
 }
 
-export interface ParsedShotList {
-  /** Project name derived from a leading '#' line, or null if none present. */
-  projectName: string | null
+export interface ParsedSection {
+  name: string
   shots: ParsedShot[]
 }
 
+export interface ParsedShotList {
+  /** Project name derived from a leading '#' line, or null if none present. */
+  projectName: string | null
+  sections: ParsedSection[]
+}
+
 /**
- * Parse a pasted shot list into a project name and a list of shots.
+ * Parse a pasted shot list into a project name, sections, and shots.
  *
  * Supported format:
  *   # Project Name (optional)
+ *   ## Section Name (optional; defaults to "Shots" when omitted)
  *
  *   Shot Title
  *   Description
@@ -24,9 +30,10 @@ export interface ParsedShotList {
  *   Description
  *
  * Rules:
- *  - Lines beginning with '#' provide the project name.
+ *  - A single '#' line provides the project name.
+ *  - A '##' line starts a new section.
  *  - A line of '---' separates shots.
- *  - The first non-empty line of a block is the title.
+ *  - The first non-empty line of a shot block is the title.
  *  - Remaining non-empty lines form the description.
  *  - Empty lines are ignored.
  */
@@ -34,39 +41,66 @@ export function parseShotList(input: string): ParsedShotList {
   const lines = input.replace(/\r\n?/g, '\n').split('\n')
 
   let projectName: string | null = null
-  const contentLines: string[] = []
+  let currentSectionName = 'Shots'
+  let sawExplicitSection = false
+  let block: string[] = []
+  const sections: ParsedSection[] = []
+
+  const currentShots = () => {
+    let section = sections[sections.length - 1]
+    if (!section || section.name !== currentSectionName) {
+      section = { name: currentSectionName, shots: [] }
+      sections.push(section)
+    }
+    return section.shots
+  }
+
+  const flushShot = () => {
+    const nonEmpty = block.map((line) => line.trim()).filter(Boolean)
+    block = []
+    if (nonEmpty.length === 0) return
+
+    const [title, ...rest] = nonEmpty
+    currentShots().push({ title, description: rest.join('\n') })
+  }
+
+  const startSection = (name: string) => {
+    flushShot()
+    sawExplicitSection = true
+    currentSectionName = name || 'Untitled Section'
+    sections.push({ name: currentSectionName, shots: [] })
+  }
 
   for (const line of lines) {
-    if (line.trimStart().startsWith('#')) {
-      // First '#' line wins as the project name.
+    const trimmed = line.trim()
+
+    if (trimmed.startsWith('##')) {
+      startSection(trimmed.replace(/^##+/, '').trim())
+      continue
+    }
+
+    if (trimmed.startsWith('#')) {
       if (projectName === null) {
-        const name = line.trimStart().replace(/^#+/, '').trim()
+        const name = trimmed.replace(/^#+/, '').trim()
         if (name) projectName = name
       }
       continue
     }
-    contentLines.push(line)
-  }
 
-  const shots: ParsedShot[] = []
-  let block: string[] = []
-
-  const flush = () => {
-    const nonEmpty = block.map((l) => l.trim()).filter((l) => l.length > 0)
-    block = []
-    if (nonEmpty.length === 0) return
-    const [title, ...rest] = nonEmpty
-    shots.push({ title, description: rest.join('\n') })
-  }
-
-  for (const line of contentLines) {
-    if (line.trim() === '---') {
-      flush()
-    } else {
-      block.push(line)
+    if (trimmed === '---') {
+      flushShot()
+      continue
     }
-  }
-  flush()
 
-  return { projectName, shots }
+    block.push(line)
+  }
+
+  flushShot()
+
+  return {
+    projectName,
+    sections: sections.filter((section) =>
+      sawExplicitSection ? section.shots.length > 0 : section.shots.length > 0,
+    ),
+  }
 }

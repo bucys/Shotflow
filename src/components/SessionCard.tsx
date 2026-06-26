@@ -17,11 +17,9 @@ function formatDate(date: string): string {
 }
 
 export default function SessionCard({ session, onOpen }: SessionCardProps) {
-  const total = session.shots.length
-  const completed = session.shots.reduce(
-    (n, s) => (s.completed ? n + 1 : n),
-    0,
-  )
+  const shots = session.sections.flatMap((section) => section.shots)
+  const total = shots.length
+  const completed = shots.reduce((n, s) => (s.completed ? n + 1 : n), 0)
   const percent = total === 0 ? 0 : Math.round((completed / total) * 100)
 
   return (

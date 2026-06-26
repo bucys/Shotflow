@@ -24,24 +24,36 @@ export default function ShootScreen({
   onBack,
   onChange,
 }: ShootScreenProps) {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [expandedShots, setExpandedShots] = useState<Record<string, boolean>>({})
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({})
 
-  const total = session.shots.length
-  const doneCount = useMemo(
-    () => session.shots.reduce((n, s) => (s.completed ? n + 1 : n), 0),
+  const allShots = useMemo(
+    () => session.sections.flatMap((section) => section.shots),
     [session],
+  )
+  const total = allShots.length
+  const doneCount = useMemo(
+    () => allShots.reduce((n, s) => (s.completed ? n + 1 : n), 0),
+    [allShots],
   )
   const percent = total === 0 ? 0 : Math.round((doneCount / total) * 100)
 
   const toggleComplete = (id: string) =>
     onChange({
       ...session,
-      shots: session.shots.map((s) =>
-        s.id === id ? { ...s, completed: !s.completed } : s,
-      ),
+      sections: session.sections.map((section) => ({
+        ...section,
+        shots: section.shots.map((shot) =>
+          shot.id === id ? { ...shot, completed: !shot.completed } : shot,
+        ),
+      })),
     })
-  const toggleExpand = (id: string) =>
-    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }))
+
+  const toggleShotExpanded = (id: string) =>
+    setExpandedShots((prev) => ({ ...prev, [id]: !prev[id] }))
+
+  const toggleSectionCollapsed = (id: string) =>
+    setCollapsedSections((prev) => ({ ...prev, [id]: !prev[id] }))
 
   const handleReset = () => {
     const ok = window.confirm(
@@ -50,7 +62,10 @@ export default function ShootScreen({
     if (ok)
       onChange({
         ...session,
-        shots: session.shots.map((s) => ({ ...s, completed: false })),
+        sections: session.sections.map((section) => ({
+          ...section,
+          shots: section.shots.map((shot) => ({ ...shot, completed: false })),
+        })),
       })
   }
 
@@ -110,17 +125,58 @@ export default function ShootScreen({
       </header>
 
       <main>
-        <ul className="shot-list">
-          {session.shots.map((shot) => (
-            <ShotCard
-              key={shot.id}
-              shot={shot}
-              expanded={!!expanded[shot.id]}
-              onToggleCompleted={() => toggleComplete(shot.id)}
-              onToggleExpanded={() => toggleExpand(shot.id)}
-            />
-          ))}
-        </ul>
+        <div className="section-list">
+          {session.sections.map((section) => {
+            const sectionTotal = section.shots.length
+            const sectionCompleted = section.shots.reduce(
+              (count, shot) => (shot.completed ? count + 1 : count),
+              0,
+            )
+            const isCollapsed = !!collapsedSections[section.id]
+
+            return (
+              <section key={section.id} className="shoot-section">
+                <button
+                  type="button"
+                  className="section-header"
+                  onClick={() => toggleSectionCollapsed(section.id)}
+                  aria-expanded={!isCollapsed}
+                >
+                  <span className={`section-chevron${isCollapsed ? '' : ' section-chevron--open'}`}>
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                      <path
+                        d="m6 9 6 6 6-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span className="section-title">{section.name}</span>
+                  <span className="section-progress">
+                    {sectionCompleted} / {sectionTotal}
+                  </span>
+                </button>
+
+                {!isCollapsed && (
+                  <ul className="shot-list shot-list--section">
+                    {section.shots.map((shot) => (
+                      <ShotCard
+                        key={shot.id}
+                        shot={shot}
+                        expanded={!!expandedShots[shot.id]}
+                        onToggleCompleted={() => toggleComplete(shot.id)}
+                        onToggleExpanded={() => toggleShotExpanded(shot.id)}
+                      />
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )
+          })}
+        </div>
       </main>
 
       <footer className="footer">

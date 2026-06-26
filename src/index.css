@@ -357,6 +357,69 @@ body {
 }
 
 /* ---------- Shot list ---------- */
+.section-list {
+  margin: 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.shoot-section {
+  display: block;
+}
+
+.section-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 2px 4px 4px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.section-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: transform 0.12s ease, color 0.12s ease;
+}
+
+.section-header:hover .section-chevron {
+  color: var(--text);
+}
+
+.section-chevron--open {
+  transform: rotate(180deg);
+}
+
+.section-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.section-progress {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.section-header:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
 .shot-list {
   list-style: none;
   margin: 20px 0 0;
@@ -364,6 +427,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.shot-list--section {
+  margin-top: 10px;
 }
 
 .card {
@@ -690,6 +757,20 @@ body {
   border-radius: var(--radius-md);
   font-size: 15px;
   font-weight: 500;
+}
+
+.preview-item--section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.preview-item-count {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .preview-item::before {

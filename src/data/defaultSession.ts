@@ -4,7 +4,11 @@ const defaultSession: ShootSession = {
   id: 'trakai',
   name: 'Trakai Drone Shot List',
   date: '2026-07-12',
-  shots: [
+  sections: [
+    {
+      id: 'section-drone-video',
+      name: 'Drone Video',
+      shots: [
     {
       id: 'shot-01',
       title: 'Castle Reveal Pull-Back',
@@ -88,6 +92,8 @@ const defaultSession: ShootSession = {
       description:
         'Final shot: fly backward away from the castle over the lake, gaining altitude as the island recedes. Use as the closing frame to bookend the reveal.',
       completed: false,
+    },
+      ],
     },
   ],
 }
