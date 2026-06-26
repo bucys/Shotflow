@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'react'
-import { parseShotList } from '../parser/parseShotList'
+import { parseShotList, type ParsedShotList } from '../parser/parseShotList'
+import {
+  PRIORITY_SECTION_NAME,
+  isPrioritySectionName,
+  orderSections,
+} from '../priority'
 import type { Section, ShootSession } from '../types/session'
 
 interface CreateProjectScreenProps {
@@ -11,15 +16,68 @@ type PlannerStep = 'describe' | 'questions'
 
 const BRIEF_PLACEHOLDER = 'Describe your shoot...'
 
+interface PlanShot {
+  title: string
+  description: string
+  priority: boolean
+}
+
+interface PlanSection {
+  name: string
+  shots: PlanShot[]
+}
+
+interface Plan {
+  /** Only the real, stored sections (priority shortlist excluded). */
+  sections: PlanSection[]
+  /** Derived ⭐ Svarbiausi kadrai references into the real shots above. */
+  priorityShots: PlanShot[]
+}
+
+/**
+ * Turn parsed AI text into the real sections plus a derived priority shortlist.
+ *
+ * The AI may emit a "⭐ Svarbiausi kadrai" section. It is NOT a real section:
+ * its titles are references that flag matching real shots as priority. We drop
+ * the section itself, mark matching shots by exact title, and ignore any title
+ * that does not exist. The priority shortlist is then derived from those flags,
+ * so a referenced shot is never duplicated in storage or the shot count.
+ */
+function buildPlan(parsed: ParsedShotList): Plan {
+  const prioritySection = parsed.sections.find((section) =>
+    isPrioritySectionName(section.name),
+  )
+  const priorityTitles = new Set(
+    (prioritySection?.shots ?? []).map((shot) => shot.title.trim()),
+  )
+
+  const sections = orderSections(
+    parsed.sections
+      .filter((section) => !isPrioritySectionName(section.name))
+      .map(
+        (section): PlanSection => ({
+          name: section.name,
+          shots: section.shots.map((shot) => ({
+            title: shot.title,
+            description: shot.description,
+            priority: priorityTitles.has(shot.title.trim()),
+          })),
+        }),
+      ),
+  )
+
+  const priorityShots = sections
+    .flatMap((section) => section.shots)
+    .filter((shot) => shot.priority)
+
+  return { sections, priorityShots }
+}
+
 function today(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
-function buildSession(
-  name: string,
-  date: string,
-  sections: { name: string; shots: { title: string; description: string }[] }[],
-): ShootSession {
+function buildSession(name: string, date: string, sections: PlanSection[]): ShootSession {
   let shotIndex = 1
 
   return {
@@ -34,6 +92,7 @@ function buildSession(
         title: shot.title,
         description: shot.description,
         completed: false,
+        priority: shot.priority,
       })),
     })),
   }
@@ -54,9 +113,11 @@ export default function CreateProjectScreen({
   const [showPreview, setShowPreview] = useState(false)
 
   const parsed = useMemo(() => parseShotList(text), [text])
+  const plan = useMemo(() => buildPlan(parsed), [parsed])
 
   const projectName = parsed.projectName || 'Untitled Project'
-  const shotCount = parsed.sections.reduce(
+  // Count unique real shots only — priority references are not double-counted.
+  const shotCount = plan.sections.reduce(
     (total, section) => total + section.shots.length,
     0,
   )
@@ -67,7 +128,7 @@ export default function CreateProjectScreen({
     !isPlanning
 
   const handleCreate = () => {
-    onCreate(buildSession(projectName, date, parsed.sections))
+    onCreate(buildSession(projectName, date, plan.sections))
   }
 
   const requestPlan = async (nextAnswers?: Record<string, string>) => {
@@ -174,7 +235,12 @@ export default function CreateProjectScreen({
 
         <main>
           <ul className="preview-list">
-            {parsed.sections.map((section) => {
+            {[
+              ...(plan.priorityShots.length > 0
+                ? [{ name: PRIORITY_SECTION_NAME, shots: plan.priorityShots }]
+                : []),
+              ...plan.sections,
+            ].map((section) => {
               const visibleShots = section.shots.slice(0, 6)
               const hiddenShotCount = section.shots.length - visibleShots.length
 

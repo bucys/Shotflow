@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react'
 import ShotCard from '../components/ShotCard'
-import type { ShootSession } from '../types/session'
+import {
+  PRIORITY_SECTION_NAME,
+  getPriorityShots,
+  orderSections,
+} from '../priority'
+import type { Section, ShootSession } from '../types/session'
+
+const PRIORITY_SECTION_ID = 'priority-shortlist'
 
 interface ShootScreenProps {
   session: ShootSession
@@ -31,12 +38,27 @@ export default function ShootScreen({
     () => session.sections.flatMap((section) => section.shots),
     [session],
   )
+  // Progress counts unique real shots only; the priority shortlist references
+  // these same shots and must not be double-counted.
   const total = allShots.length
   const doneCount = useMemo(
     () => allShots.reduce((n, s) => (s.completed ? n + 1 : n), 0),
     [allShots],
   )
   const percent = total === 0 ? 0 : Math.round((doneCount / total) * 100)
+
+  // ⭐ Svarbiausi kadrai is a synthetic, derived section: a reference list of
+  // the real shots flagged priority=true, rendered first when any exist. The
+  // real sections follow in the preferred order.
+  const renderSections = useMemo<Section[]>(() => {
+    const priorityShots = getPriorityShots(session.sections)
+    const ordered = orderSections(session.sections)
+    if (priorityShots.length === 0) return ordered
+    return [
+      { id: PRIORITY_SECTION_ID, name: PRIORITY_SECTION_NAME, shots: priorityShots },
+      ...ordered,
+    ]
+  }, [session.sections])
 
   const toggleComplete = (id: string) =>
     onChange({
@@ -126,7 +148,7 @@ export default function ShootScreen({
 
       <main>
         <div className="section-list">
-          {session.sections.map((section) => {
+          {renderSections.map((section) => {
             const sectionTotal = section.shots.length
             const sectionCompleted = section.shots.reduce(
               (count, shot) => (shot.completed ? count + 1 : count),

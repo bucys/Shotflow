@@ -26,6 +26,15 @@ function isShot(value: unknown): value is Shot {
   )
 }
 
+/**
+ * Copy a shot, normalizing the optional `priority` flag. Sessions saved with the
+ * field keep their boolean; legacy projects (no field) default to false without
+ * breaking.
+ */
+function normalizeShot(shot: Shot): Shot {
+  return { ...shot, priority: shot.priority === true }
+}
+
 function normalizeSession(value: unknown): ShootSession | null {
   if (!value || typeof value !== 'object') return null
   const candidate = value as LegacySession
@@ -50,7 +59,7 @@ function normalizeSession(value: unknown): ShootSession | null {
       .map((section) => ({
         id: section.id,
         name: section.name,
-        shots: section.shots.filter(isShot).map((shot) => ({ ...shot })),
+        shots: section.shots.filter(isShot).map(normalizeShot),
       }))
 
     return { id: candidate.id, name: candidate.name, date: candidate.date, sections }
@@ -65,7 +74,7 @@ function normalizeSession(value: unknown): ShootSession | null {
         {
           id: `${candidate.id}-section-shots`,
           name: 'Shots',
-          shots: candidate.shots.filter(isShot).map((shot) => ({ ...shot })),
+          shots: candidate.shots.filter(isShot).map(normalizeShot),
         },
       ],
     }

@@ -80,7 +80,33 @@ Shot count behavior:
 - If the location genuinely supports more unique ideas, generate more.
 - Never stop because you reached an arbitrary number.
 - Stop only when you genuinely cannot think of another useful, distinct shot for that section.
-- Add a Must Have section only if useful, with 3-5 priority shots drawn from the strongest ideas.
+
+⭐ Svarbiausi kadrai (priority shortlist):
+- First, generate the complete plan across all device sections as described above.
+- Then perform a SECOND PASS across every single shot you generated and choose the most important ones.
+- Imagine the real on-location constraints the creator faces: limited drone battery, roughly 15-20 minutes of usable shooting time, worsening weather, light that is disappearing fast, and crowds that keep increasing.
+- Ask: "If almost everything went wrong, which shots absolutely must be captured?"
+- Usually select 3-8 shots, but the exact number varies by location and plan. Do not always return the same amount — a small plan may need only 3, a rich location may justify 8.
+- Selection rules:
+  - Do NOT just pick the first shots in the list.
+  - Do NOT pick at random.
+  - Prefer shots that are: the most representative of the location, the most iconic, the most difficult to recreate later, the most atmospheric, the ones that make the story feel complete, and the ones that would be the most disappointing to miss.
+- IMPORTANT: ⭐ Svarbiausi kadrai are REFERENCES, not new shots.
+  - Use the EXACT existing shot titles, character for character, from the sections you already generated.
+  - Never invent new titles for this section.
+  - Never rewrite, shorten, translate, or paraphrase an existing title here.
+  - Each entry must be a single title line that exactly matches one shot already present in another section.
+
+Output section order:
+- Order the sections in the output text as follows:
+  1. ⭐ Svarbiausi kadrai (only when you selected priority shots)
+  2. 🎥 Drono video
+  3. 📸 Drono nuotraukos
+  4. 📱 iPhone video
+  5. 📷 iPhone nuotraukos
+  6. Then any other sections.
+- Keep the exact emoji + Lithuanian section names above when those device sections apply.
+- Keep the format parser-safe: ## for each section name, --- between shots, first line of each block is the title.
 
 Location knowledge:
 - When the location is a well-known place, use your knowledge about it.
@@ -91,7 +117,8 @@ Location knowledge:
 - If uncertain whether a landmark exists, describe broader real visual elements instead of naming a specific place.
 
 Quality rules:
-- Use clear Lithuanian section names such as Video, Nuotraukos, Drono video, Drono nuotraukos, iPhone video, iPhone nuotraukos, Kameros nuotraukos, B-roll, Detalės, Būtini kadrai, or Socialinių tinklų kadrai.
+- Use clear Lithuanian section names. Prefer the canonical emoji names where they apply: 🎥 Drono video, 📸 Drono nuotraukos, 📱 iPhone video, 📷 iPhone nuotraukos. Other useful sections include Kameros nuotraukos, B-roll, Detalės, or Socialinių tinklų kadrai.
+- The only special, reference-only section is ⭐ Svarbiausi kadrai (see the priority shortlist rules above). Never put original shots there.
 - Shots must be practical and location-specific, not generic.
 - Every shot must be unique. Avoid repetition. Never generate multiple shots that only differ by one word.
 - Each shot should differ from the others in one or more of: movement, altitude, lens perspective, composition, storytelling purpose, framing, subject, foreground, background, or lighting.
