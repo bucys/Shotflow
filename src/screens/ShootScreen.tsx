@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import ProgressBar from '../components/ProgressBar'
 import ShotCard from '../components/ShotCard'
 import type { ShootSession } from '../types/session'
 
@@ -7,6 +6,17 @@ interface ShootScreenProps {
   session: ShootSession
   onBack: () => void
   onChange: (session: ShootSession) => void
+}
+
+function formatDate(date: string): string {
+  if (!date) return 'No date set'
+  const parsed = new Date(`${date}T00:00:00`)
+  if (Number.isNaN(parsed.getTime())) return date
+  return parsed.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 export default function ShootScreen({
@@ -21,6 +31,7 @@ export default function ShootScreen({
     () => session.shots.reduce((n, s) => (s.completed ? n + 1 : n), 0),
     [session],
   )
+  const percent = total === 0 ? 0 : Math.round((doneCount / total) * 100)
 
   const toggleComplete = (id: string) =>
     onChange({
@@ -29,7 +40,6 @@ export default function ShootScreen({
         s.id === id ? { ...s, completed: !s.completed } : s,
       ),
     })
-
   const toggleExpand = (id: string) =>
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }))
 
@@ -46,7 +56,7 @@ export default function ShootScreen({
 
   return (
     <div className="app">
-      <header className="header">
+      <header className="header shoot-header">
         <button
           type="button"
           className="back-button"
@@ -66,10 +76,28 @@ export default function ShootScreen({
           Back
         </button>
 
-        <p className="eyebrow">Shoot</p>
-        <h1 className="title">{session.name}</h1>
+        <h1 className="title shoot-title">{session.name}</h1>
+        <p className="shoot-date">{formatDate(session.date)}</p>
 
-        <ProgressBar completed={doneCount} total={total} />
+        <section className="progress progress--shoot" aria-label="Shoot progress">
+          <div className="progress-label">Progress</div>
+          <div className="progress-row">
+            <span className="progress-completed">
+              {doneCount} / {total} completed
+            </span>
+            <span className="progress-percent">{percent}%</span>
+          </div>
+          <div
+            className="progress-bar"
+            role="progressbar"
+            aria-valuenow={doneCount}
+            aria-valuemin={0}
+            aria-valuemax={total}
+            aria-label="Shots completed"
+          >
+            <div className="progress-fill" style={{ width: `${percent}%` }} />
+          </div>
+        </section>
 
         <button
           type="button"

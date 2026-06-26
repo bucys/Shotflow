@@ -90,8 +90,7 @@ export function loadSessions(): ShootSession[] {
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) {
-        const sessions = parsed.filter(isSession).map(cloneSession)
-        if (sessions.length > 0) return sessions
+        return parsed.filter(isSession).map(cloneSession)
       }
     }
   } catch {
