@@ -93,7 +93,8 @@ export default function ShootScreen({
 
   return (
     <div className="app">
-      <header className="header shoot-header">
+      <main>
+        <header className="header shoot-header">
         <button
           type="button"
           className="back-button"
@@ -146,7 +147,6 @@ export default function ShootScreen({
         </button>
       </header>
 
-      <main>
         <div className="section-list">
           {renderSections.map((section) => {
             const sectionTotal = section.shots.length
@@ -206,4 +206,5 @@ export default function ShootScreen({
       </main>
     </div>
   )
+
 }
