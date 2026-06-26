@@ -681,6 +681,27 @@ body {
   min-height: 300px;
 }
 
+.planner-examples {
+  margin-top: 12px;
+  color: var(--text-faint);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.planner-examples p {
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.planner-examples ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.planner-examples li + li {
+  margin-top: 4px;
+}
+
 .question-list {
   display: flex;
   flex-direction: column;

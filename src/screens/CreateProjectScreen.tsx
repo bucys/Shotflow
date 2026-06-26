@@ -9,11 +9,7 @@ interface CreateProjectScreenProps {
 
 type PlannerStep = 'describe' | 'questions'
 
-const BRIEF_PLACEHOLDER = `Tomorrow I'm going to Trakai around 19:00.
-
-I'll bring my DJI Air 2 and an iPhone.
-
-I want cinematic travel footage and beautiful photos for Instagram.`
+const BRIEF_PLACEHOLDER = 'Describe your shoot...'
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -304,6 +300,16 @@ export default function CreateProjectScreen({
             autoCapitalize="sentences"
             spellCheck={true}
           />
+          <div className="planner-examples" aria-label="Shoot brief examples">
+            <p>Examples:</p>
+            <ul>
+              <li>Tomorrow I'm filming Trakai Castle at sunset with my DJI Air 2.</li>
+              <li>Weekend trip to Nida. I want cinematic drone footage and photos.</li>
+              <li>
+                Shooting a BMW M3 for Instagram using Sony A7 IV and DJI Mini 4 Pro.
+              </li>
+            </ul>
+          </div>
         </div>
 
         {planError && (

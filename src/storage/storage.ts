@@ -1,4 +1,3 @@
-import defaultSession from '../data/defaultSession'
 import availableSessions from '../data/sessions'
 import type { Section, ShootSession } from '../types/session'
 import type { Shot } from '../types/shot'
@@ -111,7 +110,7 @@ function getLegacyCompletedMap(sessionId: string): CompletedMap {
       }
     }
 
-    if (sessionId === defaultSession.id) {
+    if (sessionId === 'trakai') {
       const legacyRaw = localStorage.getItem(LEGACY_COMPLETED_KEY)
       if (legacyRaw) {
         const parsed = JSON.parse(legacyRaw)
