@@ -121,16 +121,22 @@ export default function CreateProjectScreen({
 
       <main>
         <div className="field">
-          <label className="field-label" htmlFor="project-name">
+          <label className="field-label" htmlFor="shotflow-project-title">
             Project Name
           </label>
           <input
-            id="project-name"
+            id="shotflow-project-title"
+            name="shotflow-project-title"
             type="text"
             className="text-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Project Name"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="words"
+            spellCheck={false}
+            inputMode="text"
           />
         </div>
 
@@ -140,10 +146,12 @@ export default function CreateProjectScreen({
           </label>
           <input
             id="project-date"
+            name="shotflow-project-date"
             type="date"
             className="text-input"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            autoComplete="off"
           />
         </div>
 
